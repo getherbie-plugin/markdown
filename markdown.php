@@ -36,7 +36,7 @@ class MarkdownPlugin
         });
     }
 
-    public static function addShortcode(\herbie\sysplugin\shortcode\classes\Shortcode $shortcode)
+    public static function addShortcode(\herbie\plugin\shortcode\classes\Shortcode $shortcode)
     {
         $shortcode->add('markdown', ['MarkdownPlugin', 'markdownShortcode']);
     }
