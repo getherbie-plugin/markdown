@@ -43,9 +43,6 @@ class MarkdownPlugin
 
     public static function parseMarkdown($value)
     {
-        include_once(__DIR__ . '/vendor/Parsedown.php');
-        include_once(__DIR__ . '/vendor/ParsedownExtra.php');
-
         $parser = new \ParsedownExtra();
         $parser->setUrlsLinked(false);
         $html = $parser->text($value);
