@@ -6,6 +6,7 @@
     "type": "herbie-plugin",
     "license": "BSD-3-Clause",
     "require": {
-        "erusev/parsedown-extra": "0.7.0"
+        "erusev/parsedown": "1.7.1",
+        "erusev/parsedown-extra": "0.7.1"
     }
 }
