@@ -1,47 +1,61 @@
 <?php
 
-use Herbie\DI;
-use Herbie\Hook;
+namespace herbie\plugin\markdown;
 
-class MarkdownPlugin
+use Zend\EventManager\EventInterface;
+use Zend\EventManager\EventManagerInterface;
+
+class MarkdownPlugin extends \Herbie\Plugin
 {
 
-    public static function install()
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $config = DI::get('Config');
+        $config = $this->herbie->getConfig();
 
         // add twig function / filter
         if ((bool)$config->get('plugins.config.markdown.twig', false)) {
-            Hook::attach('twigInitialized', function (\Twig_Environment $twig) {
-                $options = ['is_safe' => ['html']];
-                $twig->addFunction(
-                    new \Twig_SimpleFunction('markdown', ['MarkdownPlugin', 'parseMarkdown'], $options)
-                );
-                $twig->addFilter(
-                    new \Twig_SimpleFilter('markdown', ['MarkdownPlugin', 'parseMarkdown'], $options)
-                );
-            });
+            $events->attach('twigInitialized', [$this, 'onTwigInitialized'], $priority);
         }
 
         // add shortcode
         if ((bool)$config->get('plugins.config.markdown.shortcode', true)) {
-            Hook::attach('shortcodeInitialized', ['MarkdownPlugin', 'addShortcode']);
+            $events->attach('shortcodeInitialized', [$this, 'addShortcode'], $priority);
         }
 
-        Hook::attach('renderContent', function ($content, array $attributes) {
-            if (!in_array($attributes['format'], ['markdown', 'md'])) {
-                return $content;
-            }
-            return MarkdownPlugin::parseMarkdown($content);
-        });
+        $events->attach('renderContent', [$this, 'onRenderContent'], $priority);
     }
 
-    public static function addShortcode(\herbie\plugin\shortcode\classes\Shortcode $shortcode)
+    public function onTwigInitialized(EventInterface $event)
     {
-        $shortcode->add('markdown', ['MarkdownPlugin', 'markdownShortcode']);
+        /** @var Twig_Environment $twig */
+        $twig = $event->getTarget();
+        $options = ['is_safe' => ['html']];
+        $twig->addFunction(
+            new \Twig_SimpleFunction('markdown', [$this, 'parseMarkdown'], $options)
+        );
+        $twig->addFilter(
+            new \Twig_SimpleFilter('markdown', [$this, 'parseMarkdown'], $options)
+        );
     }
 
-    public static function parseMarkdown($value)
+    public function onRenderContent(EventInterface $event)
+    {
+        if (!in_array($event->getParam('format'), ['markdown', 'md'])) {
+            return;
+        }
+        $content = $event->getTarget();
+        $parsed = $this->parseMarkdown($content);
+        $content->set($parsed);
+    }
+
+    public function addShortcode(EventInterface $event)
+    {
+        /** @var \herbie\plugin\shortcode\classes\Shortcode $shortcode */
+        $shortcode = $event->getTarget();
+        $shortcode->add('markdown', [$this, 'markdownShortcode']);
+    }
+
+    public function parseMarkdown($value)
     {
         $parser = new \ParsedownExtra();
         $parser->setUrlsLinked(false);
@@ -49,10 +63,8 @@ class MarkdownPlugin
         return $html;
     }
 
-    public static function markdownShortcode($attribs, $content)
+    public function markdownShortcode($attribs, $content)
     {
-        return self::parseMarkdown($content);
+        return $this->parseMarkdown($content);
     }
 }
-
-MarkdownPlugin::install();
