@@ -20,15 +20,15 @@ class MarkdownPlugin extends \Herbie\Plugin
 
         // add twig function / filter
         if ((bool)$config->get('plugins.config.markdown.twig', false)) {
-            $events->attach('twigInitialized', [$this, 'onTwigInitialized'], $priority);
+            $events->attach('onTwigInitialized', [$this, 'onTwigInitialized'], $priority);
         }
 
         // add shortcode
         if ((bool)$config->get('plugins.config.markdown.shortcode', true)) {
-            $events->attach('shortcodeInitialized', [$this, 'onShortcodeInitialized'], $priority);
+            $events->attach('onShortcodeInitialized', [$this, 'onShortcodeInitialized'], $priority);
         }
 
-        $events->attach('renderContent', [$this, 'onRenderContent'], $priority);
+        $events->attach('onRenderContent', [$this, 'onRenderContent'], $priority);
     }
 
     /**
