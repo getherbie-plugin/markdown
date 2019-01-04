@@ -16,7 +16,7 @@ class MarkdownPlugin extends \Herbie\Plugin
      */
     public function attach(EventManagerInterface $events, $priority = 1): void
     {
-        $config = $this->herbie->getConfig();
+        $config = $this->getConfig();
 
         // add twig function / filter
         if ((bool)$config->get('plugins.config.markdown.twig', false)) {
