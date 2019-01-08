@@ -4,27 +4,41 @@ declare(strict_types=1);
 
 namespace herbie\plugin\markdown;
 
+use Herbie\Config;
+use Herbie\PluginInterface;
 use Herbie\StringValue;
 use Zend\EventManager\EventInterface;
 use Zend\EventManager\EventManagerInterface;
 
-class MarkdownPlugin extends \Herbie\Plugin
+class MarkdownPlugin implements PluginInterface
 {
+    /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * MarkdownPlugin constructor.
+     * @param Config $config
+     */
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
+
     /**
      * @param EventManagerInterface $events
      * @param int $priority
      */
     public function attach(EventManagerInterface $events, $priority = 1): void
     {
-        $config = $this->getConfig();
-
         // add twig function / filter
-        if ((bool)$config->get('plugins.config.markdown.twig', false)) {
+        if ((bool)$this->config->get('plugins.config.markdown.twig', false)) {
             $events->attach('onTwigInitialized', [$this, 'onTwigInitialized'], $priority);
         }
 
         // add shortcode
-        if ((bool)$config->get('plugins.config.markdown.shortcode', true)) {
+        if ((bool)$this->config->get('plugins.config.markdown.shortcode', true)) {
             $events->attach('onShortcodeInitialized', [$this, 'onShortcodeInitialized'], $priority);
         }
 
@@ -53,6 +67,7 @@ class MarkdownPlugin extends \Herbie\Plugin
      */
     public function onRenderContent(EventInterface $event)
     {
+        #echo __METHOD__ . "<br>";
         if (!in_array($event->getParam('format'), ['markdown', 'md'])) {
             return;
         }
