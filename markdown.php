@@ -33,7 +33,7 @@ class MarkdownPlugin implements PluginInterface
     public function attach(EventManager $events, int $priority = 1): void
     {
         // add twig function / filter
-        if ((bool)$this->config->get('plugins.config.markdown.twig', false)) {
+        if ((bool)$this->config->plugins->markdown->twig) {
             $events->attach('onTwigInitialized', [$this, 'onTwigInitialized'], $priority);
         }
 
